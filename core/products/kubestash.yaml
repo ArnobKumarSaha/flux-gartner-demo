@@ -1,0 +1,42 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kubestash
+  namespace: kubeops
+spec:
+  chart:
+    spec:
+      chart: kubestash
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: appscode-charts-oci
+        namespace: kubeops
+      valuesFiles:
+      - values.yaml
+      - ci/ci-values.yaml
+      version: v2024.9.30
+#  dependsOn:
+#  - name: license-proxyserver
+#    namespace: kubeops
+  install:
+    createNamespace: true
+    remediation:
+      retries: -1
+  interval: 5m
+  releaseName: kubestash
+  storageNamespace: kubestash
+  targetNamespace: kubestash
+  timeout: 30m
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: -1
+  values:
+    global:
+      registryFQDN: ghcr.io
+  valuesFrom:
+  - kind: Secret
+    name: license
+    optional: true
+    valuesKey: license.yaml

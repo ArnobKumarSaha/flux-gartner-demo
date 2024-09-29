@@ -1,0 +1,69 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kubedb
+  namespace: kubeops
+spec:
+  chart:
+    spec:
+      chart: kubedb
+      interval: 60m
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: appscode-charts-oci
+        namespace: kubeops
+      valuesFiles:
+      - values.yaml
+      - ci/ci-values.yaml
+      version: v2024.9.30
+#  dependsOn:
+#  - name: license-proxyserver
+  install:
+    crds: CreateReplace
+    createNamespace: true
+    remediation:
+      retries: -1
+  interval: 5m
+  releaseName: kubedb
+  storageNamespace: kubedb
+  targetNamespace: kubedb
+  timeout: 30m
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: -1
+  values:
+    global:
+      imagePullSecrets: []
+      registryFQDN: ghcr.io
+    kubedb-autoscaler:
+      enabled: true
+    kubedb-catalog:
+      enabled: true
+      proxies:
+        appscode: r.appscode.com
+        dockerHub: ""
+        dockerLibrary: ""
+        ghcr: ghcr.io
+        kubernetes: registry.k8s.io
+        quay: quay.io
+    kubedb-dashboard:
+      enabled: false
+    kubedb-kubestash-catalog:
+      enabled: true
+    kubedb-metrics:
+      enabled: false
+    kubedb-ops-manager:
+      enabled: true
+    kubedb-provisioner:
+      enabled: true
+    kubedb-schema-manager:
+      enabled: false
+    sidekick:
+      enabled: true
+  valuesFrom:
+  - kind: Secret
+    name: license
+    optional: true
+    valuesKey: license.yaml
